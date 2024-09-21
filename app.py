@@ -6,10 +6,10 @@ app = Flask(__name__)
 
 def db_connection():
     return mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='',
-        database='as_practica2'
+        host="185.232.14.52",
+        database="u760464709_tst_sep",
+        user="u760464709_tst_sep_usr",
+        password="dJ0CIAFF="
     )
 
 @app.route('/')
