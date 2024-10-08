@@ -22,7 +22,7 @@ def contacto():
 
 @app.route('/alumnos/guardar', methods=['POST'])
 def guardar_alumno():
-    id_registro = request.form.get('id')  # Obtener el ID si existe
+    id_registro = request.form.get('id')  
     email = request.form['email']
     nombre = request.form['nombre']
     asunto = request.form['asunto']
@@ -30,12 +30,12 @@ def guardar_alumno():
     conn = db_connection()
     cursor = conn.cursor()
     
-    if id_registro:  # Si existe el ID, se actualiza
+    if id_registro:  
         cursor.execute(
             "UPDATE tst0_contacto SET Correo_Electronico = %s, Nombre = %s, Asunto = %s WHERE Id_Contacto = %s",
             (email, nombre, asunto, id_registro)
         )
-    else:  # Si no existe, se inserta un nuevo registro
+    else:  
         cursor.execute(
             "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)",
             (email, nombre, asunto)
@@ -53,7 +53,7 @@ def guardar_alumno():
         ssl=True
     )
 
-    # Emitir evento de creación o actualización
+
     pusher_client.trigger('my-channel', 'my-event', {
         'message': 'Registro guardado'
     })
@@ -85,7 +85,6 @@ def eliminar_alumno(id):
     cursor.close()
     conn.close()
 
-    # Emitir evento de eliminación a través de Pusher
     pusher_client = pusher.Pusher(
         app_id="1767326",
         key="42b9b4800a5a14fc436c",
