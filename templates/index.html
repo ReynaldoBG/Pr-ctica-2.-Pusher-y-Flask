@@ -11,6 +11,7 @@
 </head>
 
 <body>
+
     <div class="container">
         <h2>Registros</h2>
         <table class="table">
@@ -20,7 +21,10 @@
                     <th>Email</th>
                     <th>Nombre</th>
                     <th>Asunto</th>
+                    <th></th>
+                    <th></th>
                 </tr>
+                
             </thead>
             <tbody id="registroTabla">
             </tbody>
@@ -28,36 +32,60 @@
     </div>
 
     <script>
+        // Función para cargar los registros
         function cargarRegistros() {
             $.get("/alumnos/obtener", function (data) {
                 $("#registroTabla").empty(); 
                 data.forEach(function (registro) {
                     $("#registroTabla").append(`
-                        <tr>
+                        <tr id="registro-${registro.Id_Contacto}">
                             <td>${registro.Id_Contacto}</td>
                             <td>${registro.Correo_Electronico}</td>
                             <td>${registro.Nombre}</td>
                             <td>${registro.Asunto}</td>
+                            <td><a href="/alumnos/editar/${registro.Id_Contacto}" class="btn bg-warning">Editar</a></td>
+                            <td><button class="btn bg-danger" onclick="eliminarRegistro(${registro.Id_Contacto})">Eliminar</button></td>
                         </tr>
                     `);
                 });
             });
         }
-
-        cargarRegistros();
-
+    
+        // Función para eliminar un registro
+        function eliminarRegistro(id) {
+            $.ajax({
+                url: `/alumnos/eliminar/${id}`,
+                type: 'DELETE',
+                success: function (result) {
+                    console.log("Registro eliminado:", result);
+                }
+            });
+        }
+    
+        // Configuración de Pusher
         var pusher = new Pusher('42b9b4800a5a14fc436c', { 
             cluster: 'us2',
             encrypted: true
         });
-
+    
         var channel = pusher.subscribe('my-channel');
+        
+        // Escucha el evento para nuevos registros
         channel.bind('my-event', function (data) {
             console.log('Evento recibido:', data);  
             cargarRegistros(); 
         });
         
+        // Escucha el evento de eliminación
+        channel.bind('eliminar-event', function (data) {
+            console.log('Evento de eliminación recibido:', data);
+            // Elimina la fila del registro eliminado de la tabla
+            $(`#registro-${data.id}`).remove();
+        });
+    
+        cargarRegistros();
     </script>
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
