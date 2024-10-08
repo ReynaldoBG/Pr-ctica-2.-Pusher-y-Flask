@@ -22,6 +22,7 @@ def contacto():
 
 @app.route('/alumnos/guardar', methods=['POST'])
 def guardar_alumno():
+    id_registro = request.form.get('id')  # Obtener el ID si existe
     email = request.form['email']
     nombre = request.form['nombre']
     asunto = request.form['asunto']
@@ -29,10 +30,18 @@ def guardar_alumno():
     conn = db_connection()
     cursor = conn.cursor()
     
-    cursor.execute("INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)", 
-                   (email, nombre, asunto))
-    conn.commit()
+    if id_registro:  # Si existe el ID, se actualiza
+        cursor.execute(
+            "UPDATE tst0_contacto SET Correo_Electronico = %s, Nombre = %s, Asunto = %s WHERE Id_Contacto = %s",
+            (email, nombre, asunto, id_registro)
+        )
+    else:  # Si no existe, se inserta un nuevo registro
+        cursor.execute(
+            "INSERT INTO tst0_contacto (Correo_Electronico, Nombre, Asunto) VALUES (%s, %s, %s)",
+            (email, nombre, asunto)
+        )
     
+    conn.commit()
     cursor.close()
     conn.close()
 
@@ -44,9 +53,9 @@ def guardar_alumno():
         ssl=True
     )
 
-
+    # Emitir evento de creación o actualización
     pusher_client.trigger('my-channel', 'my-event', {
-        'message': 'Nuevo registro agregado'
+        'message': 'Registro guardado'
     })
     print("Evento emitido a Pusher")  
 
@@ -64,6 +73,48 @@ def obtener_alumnos():
     conn.close()
 
     return jsonify(registros)
+
+@app.route('/alumnos/eliminar/<int:id>', methods=['DELETE'])
+def eliminar_alumno(id):
+    conn = db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("DELETE FROM tst0_contacto WHERE Id_Contacto = %s", (id,))
+    conn.commit()
+    
+    cursor.close()
+    conn.close()
+
+    # Emitir evento de eliminación a través de Pusher
+    pusher_client = pusher.Pusher(
+        app_id="1767326",
+        key="42b9b4800a5a14fc436c",
+        secret="569fb5bfe16d510b6ce7",
+        cluster="us2",
+        ssl=True
+    )
+
+    pusher_client.trigger('my-channel', 'eliminar-event', {
+        'id': id
+    })
+    
+    return jsonify({'status': 'Registro eliminado exitosamente'}), 200
+
+@app.route('/alumnos/editar/<int:id>', methods=['GET'])
+def editar_alumno(id):
+    conn = db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM tst0_contacto WHERE Id_Contacto = %s", (id,))
+    registro = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if registro:
+        return render_template("formulario.html", registro=registro)
+    else:
+        return "Registro no encontrado", 404
 
 if __name__ == '__main__':
     app.run(debug=True)
