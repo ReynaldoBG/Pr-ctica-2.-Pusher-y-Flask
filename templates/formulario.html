@@ -12,19 +12,20 @@
 <body>
     <div class="container">
         <form id="contactForm" class="needs-validation" method="post" action="/alumnos/guardar">
+            <input type="hidden" name="id" value="{{ registro.Id_Contacto if registro else '' }}">
             <div class="mb-3">
                 <label for="email" class="form-label">Email:</label>
-                <input type="email" name="email" id="email" class="form-control" required minlength="5" maxlength="50">
+                <input type="email" name="email" id="email" class="form-control" required minlength="5" maxlength="50" value="{{ registro.Correo_Electronico if registro else '' }}">
             </div>
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre:</label>
-                <input type="text" name="nombre" id="nombre" class="form-control" required minlength="10" maxlength="50">
+                <input type="text" name="nombre" id="nombre" class="form-control" required minlength="10" maxlength="50" value="{{ registro.Nombre if registro else '' }}">
             </div>
             <div class="mb-3">
                 <label for="asunto" class="form-label">Asunto:</label>
-                <input type="text" name="asunto" id="asunto" class="form-control" required minlength="10" maxlength="50">
+                <input type="text" name="asunto" id="asunto" class="form-control" required minlength="10" maxlength="50" value="{{ registro.Asunto if registro else '' }}">
             </div>
-            <button type="submit" class="btn btn-primary m-3">Contactar</button>
+            <button type="submit" class="btn btn-primary m-3">Guardar Cambios</button>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
